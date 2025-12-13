@@ -9,10 +9,12 @@ def main(name: str):
     df = load_and_preprocess_data(name, task="train")
     
     # create env
-    env = ForexTradingEnv(df=df,
-                          window_size=30,
-                          sl_options=[30, 60, 80],  # example SL distances in pips
-                          tp_options=[30, 60, 80])  # example TP distances in pips
+    env = ForexTradingEnv(
+        df=df,
+        window_size=30,
+        sl_options=[30, 60, 80],  # example SL distances in pips
+        tp_options=[30, 60, 80],  # example TP distances in pips
+    )
     
     # Wrap in a DummyVecEnv (required by stable-baselines for parallelization)
     vec_env = DummyVecEnv([lambda: env])

@@ -1,6 +1,7 @@
-import gym
+from typing import Optional, Tuple
+import gymnasium as gym
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
 
 class ForexTradingEnv(gym.Env):
     """
@@ -136,7 +137,7 @@ class ForexTradingEnv(gym.Env):
         reward = pnl * 10000
         return reward
     
-    def step(self, action):
+    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
         """
         action is an integer in [0..(1 + 2*len(SL)*len(TP))-1],
         where:
@@ -186,22 +187,24 @@ class ForexTradingEnv(gym.Env):
         # Move forward
         self.current_step += 1
         if self.current_step >= self.n_steps - 1:
-            self.done = True
+            terminated = False
+            truncated = True
         else:
-            self.done = False
+            terminated = True
+            truncated = False
         
         # Observe next state
         obs = self._get_observation()
         
-        return obs, reward, self.done, {}
+        return obs, reward, terminated, truncated, {}
     
-    def reset(self):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         self.current_step = self.window_size  # start so we have a full window
         self.equity = 10000.0
         self.done = False
         self.equity_curve = []
         self.last_trade_info = None
-        return self._get_observation()
+        return self._get_observation(), {}
     
     def render(self, mode='human'):
         """Optional: print or plot debug info."""
