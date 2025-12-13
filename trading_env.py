@@ -14,6 +14,7 @@ class ForexTradingEnv(gym.Env):
         super(ForexTradingEnv, self).__init__()
         
         # Store the dataframe containing prices and indicators
+        self.time = df.index
         self.df = df.reset_index(drop=True)
         self.n_steps = len(self.df)
         
@@ -156,17 +157,22 @@ class ForexTradingEnv(gym.Env):
             }
         else:
             # direction=0 or 1 => short/long
+            entry_time = self.time[self.current_step]
             entry_price = self.df.loc[self.current_step, "Close"]
             reward = self._calculate_reward(direction, sl, tp)
             
             # next bar's close if possible
             if self.current_step < self.n_steps - 1:
+                exit_time = self.time[self.current_step + 1]
                 exit_price = self.df.loc[self.current_step + 1, "Close"]
             else:
+                exit_time = entry_time
                 exit_price = entry_price
             
             self.last_trade_info = {
+                "entry_time": entry_time,
                 "entry_price": entry_price,
+                "exit_time": exit_time,
                 "exit_price": exit_price,
                 "pnl": reward / 10000.0  # convert back to 'pips'
             }

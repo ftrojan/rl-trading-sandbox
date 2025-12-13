@@ -7,11 +7,11 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from indicators import load_and_preprocess_data
 from trading_env import ForexTradingEnv
 
-def main():
+def main(name: str):
     # 1. Load new test data
     #    If you want to test on the EXACT training data, use the same CSV as training
     #test_df = load_and_preprocess_data("data/EURUSD_Candlestick_1_Hour_BID_01.07.2020-15.07.2023.csv")
-    test_df = load_and_preprocess_data("data/test_EURUSD_Candlestick_1_Hour_BID_20.02.2023-22.02.2025.csv")
+    test_df = load_and_preprocess_data(name, task="test")
 
     # 2. Create the same environment
     #    Must match all parameters used in training: window_size, sl_options, tp_options
@@ -27,7 +27,7 @@ def main():
 
     # 3. Load the trained model
     #    Must match the file name you saved in train_agent.py
-    model = PPO.load("model_eurusd", env=vec_test_env)
+    model = PPO.load(f"models/{name}", env=vec_test_env)
 
     # 4. Initialize logs
     obs = vec_test_env.reset()
@@ -56,7 +56,9 @@ def main():
             # trade_info['pnl'] = trade's profit/loss in pips (or 0 if no trade)
             trade_history.append({
                 "Trade Number": trade_id,
+                "EntryTime": trade_info["entry_time"].isoformat(),
                 "Entry Price": trade_info["entry_price"],
+                "ExitTime": trade_info["exit_time"].isoformat(),
                 "Exit Price": trade_info["exit_price"],
                 "Profit/Loss": trade_info["pnl"]
             })
@@ -68,7 +70,7 @@ def main():
 
     # 6. Convert trades to DataFrame and save
     trades_df = pd.DataFrame(trade_history)
-    output_file = "trade_history_output.csv"
+    output_file = f"outputs/{name}_trade_history_output.csv"
     trades_df.to_csv(output_file, index=False)
     print(f"Trade history saved to {output_file}")
 
@@ -82,4 +84,5 @@ def main():
     plt.show()
 
 if __name__ == "__main__":
-    main()
+    # EURUSD GOOG MA
+    main("EURUSD")

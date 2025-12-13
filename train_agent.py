@@ -5,8 +5,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from indicators import load_and_preprocess_data
 from trading_env import ForexTradingEnv
 
-def main():
-    df = load_and_preprocess_data("data/EURUSD_Candlestick_1_Hour_BID_01.07.2020-15.07.2023.csv")
+def main(name: str):
+    df = load_and_preprocess_data(name, task="train")
     
     # create env
     env = ForexTradingEnv(df=df,
@@ -27,12 +27,11 @@ def main():
     
     # Train the model
     model.learn(total_timesteps=10100)
-    model.save("model_eurusd")
+    model.save(f"models/{name}")
     print("Model saved successfully!")
     
     # Evaluate or test the model
     obs = vec_env.reset()
-    done = False
     equity_curve = []
     
     while True:
@@ -58,4 +57,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # EURUSD GOOG MA
+    main("GOOG")
