@@ -70,8 +70,12 @@ class ForexTradingEnv(gym.Env):
         # If there's not enough data to fill 'window_size', pad with the earliest row
         if len(obs_df) < self.window_size:
             padding_rows = self.window_size - len(obs_df)
-            first_part = np.tile(obs_df.iloc[0].values, (padding_rows, 1))
-            obs_array = np.concatenate([first_part, obs_df.values], axis=0)
+            if len(obs_df) > 0:
+                first_part = np.tile(obs_df.iloc[0].values, (padding_rows, 1))
+                obs_array = np.concatenate([first_part, obs_df.values], axis=0)
+            else:
+                # If obs_df is empty, use zeros (shouldn't happen in normal operation)
+                obs_array = np.zeros((self.window_size, self.num_features), dtype=np.float32)
         else:
             obs_array = obs_df.values
         
@@ -187,10 +191,10 @@ class ForexTradingEnv(gym.Env):
         # Move forward
         self.current_step += 1
         if self.current_step >= self.n_steps - 1:
-            terminated = False
-            truncated = True
-        else:
             terminated = True
+            truncated = False
+        else:
+            terminated = False
             truncated = False
         
         # Observe next state
