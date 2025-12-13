@@ -60,4 +60,4 @@ def main(name: str):
 
 if __name__ == "__main__":
     # EURUSD GOOG MA
-    main("GOOG")
+    main("EURUSD")
