@@ -13,11 +13,11 @@ def main(name: str):
         policy="MlpPolicy",
         env=vec_env,
         verbose=1,
-        tensorboard_log="./tensorboard_log/"
+        # tensorboard_log="./tensorboard_log/"
     )
     
     # Train the model
-    model.learn(total_timesteps=10100)
+    model.learn(total_timesteps=10_100)
     model.save(f"models/{name}")
     print("Model saved successfully!")
     
@@ -49,4 +49,4 @@ def main(name: str):
 
 if __name__ == "__main__":
     # EURUSD GOOG MA
-    main("EURUSD")
+    main("GOOG")

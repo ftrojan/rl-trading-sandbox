@@ -2,6 +2,7 @@ import pandas as pd
 import gymnasium as gym
 from stable_baselines3.common.vec_env import DummyVecEnv
 from env_forex import ForexTradingEnv
+from env_stocks import StocksEnv
 
 
 def get_env(name: str, df: pd.DataFrame) -> gym.Env:
@@ -12,6 +13,12 @@ def get_env(name: str, df: pd.DataFrame) -> gym.Env:
             window_size=30,
             sl_options=[30, 60, 80],  # example SL distances in pips
             tp_options=[30, 60, 80],  # example TP distances in pips
+        )
+    elif name in ("GOOG", "MA"):
+        env = StocksEnv(
+            df=df,
+            window_size=10,
+            frame_bound=(10, len(df)),
         )
     else:
         raise ValueError(name)
