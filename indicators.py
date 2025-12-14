@@ -61,7 +61,7 @@ def load_and_preprocess_eurusd(csv_path: str) -> pd.DataFrame:
 def load_and_preprocess_name(name: str, task: str) -> pd.DataFrame:
     with open(f"data/{name}.csv") as fp:
         df_all = pd.read_csv(fp, parse_dates=True, index_col='time')
-        df_h = olhc_1h(df_all)
+        df_h = df_all
     train_dt = datetime.datetime.fromisoformat("2025-01-01T00:00:00+00:00")
     if task == "train":
         df = df_h.loc[:train_dt, :]

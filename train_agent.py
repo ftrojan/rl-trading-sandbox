@@ -1,23 +1,12 @@
 import matplotlib.pyplot as plt
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
-
 from indicators import load_and_preprocess_data
-from trading_env import ForexTradingEnv
+from trading_env import get_vec_env
 
 def main(name: str):
     df = load_and_preprocess_data(name, task="train")
     
-    # create env
-    env = ForexTradingEnv(
-        df=df,
-        window_size=30,
-        sl_options=[30, 60, 80],  # example SL distances in pips
-        tp_options=[30, 60, 80],  # example TP distances in pips
-    )
-    
-    # Wrap in a DummyVecEnv (required by stable-baselines for parallelization)
-    vec_env = DummyVecEnv([lambda: env])
+    vec_env = get_vec_env(name, df)
     
     # Define RL model (PPO)
     model = PPO(
@@ -60,4 +49,4 @@ def main(name: str):
 
 if __name__ == "__main__":
     # EURUSD GOOG MA
-    main("MA")
+    main("EURUSD")

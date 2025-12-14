@@ -1,11 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
-
 from indicators import load_and_preprocess_data
-from trading_env import ForexTradingEnv
+from trading_env import get_vec_env
+
 
 def main(name: str):
     # 1. Load new test data
@@ -14,16 +12,7 @@ def main(name: str):
     test_df = load_and_preprocess_data(name, task="test")
 
     # 2. Create the same environment
-    #    Must match all parameters used in training: window_size, sl_options, tp_options
-    test_env = ForexTradingEnv(
-        df=test_df,
-        window_size=30,         # same as training
-        sl_options=[30, 60, 80],  
-        tp_options=[30, 60, 80]
-    )
-
-    # Wrap in DummyVecEnv just like training
-    vec_test_env = DummyVecEnv([lambda: test_env])
+    vec_test_env = get_vec_env(name, test_df)
 
     # 3. Load the trained model
     #    Must match the file name you saved in train_agent.py
@@ -56,9 +45,9 @@ def main(name: str):
             # trade_info['pnl'] = trade's profit/loss in pips (or 0 if no trade)
             trade_history.append({
                 "Trade Number": trade_id,
-                "EntryTime": trade_info["entry_time"].isoformat(),
+                "EntryTime": trade_info["entry_time"].isoformat() if "entry_time" in trade_info else None,
                 "Entry Price": trade_info["entry_price"],
-                "ExitTime": trade_info["exit_time"].isoformat(),
+                "ExitTime": trade_info["exit_time"].isoformat() if "exit_time" in trade_info else None,
                 "Exit Price": trade_info["exit_price"],
                 "Profit/Loss": trade_info["pnl"]
             })
@@ -85,4 +74,4 @@ def main(name: str):
 
 if __name__ == "__main__":
     # EURUSD GOOG MA
-    main("MA")
+    main("EURUSD")
