@@ -1,38 +1,28 @@
 import matplotlib.pyplot as plt
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
-
 from indicators import load_and_preprocess_data
-from trading_env import ForexTradingEnv
+from trading_env import get_vec_env
 
-def main():
-    df = load_and_preprocess_data("data/EURUSD_Candlestick_1_Hour_BID_01.07.2020-15.07.2023.csv")
+def main(name: str):
+    df = load_and_preprocess_data(name, task="train")
     
-    # create env
-    env = ForexTradingEnv(df=df,
-                          window_size=30,
-                          sl_options=[30, 60, 80],  # example SL distances in pips
-                          tp_options=[30, 60, 80])  # example TP distances in pips
-    
-    # Wrap in a DummyVecEnv (required by stable-baselines for parallelization)
-    vec_env = DummyVecEnv([lambda: env])
+    vec_env = get_vec_env(name, df)
     
     # Define RL model (PPO)
     model = PPO(
         policy="MlpPolicy",
         env=vec_env,
         verbose=1,
-        tensorboard_log="./tensorboard_log/"
+        # tensorboard_log="./tensorboard_log/"
     )
     
     # Train the model
-    model.learn(total_timesteps=10100)
-    model.save("model_eurusd")
+    model.learn(total_timesteps=10_100)
+    model.save(f"models/{name}")
     print("Model saved successfully!")
     
     # Evaluate or test the model
     obs = vec_env.reset()
-    done = False
     equity_curve = []
     
     while True:
@@ -58,4 +48,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # EURUSD GOOG MA
+    main("GOOG")

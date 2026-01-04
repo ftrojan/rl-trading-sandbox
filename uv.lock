@@ -379,28 +379,8 @@ wheels = [
 ]
 
 [[package]]
-name = "gym"
-version = "0.26.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "cloudpickle" },
-    { name = "gym-notices" },
-    { name = "numpy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/b1/eb05a423eb801ab7d0715d6a3b28d92589e30b437052553df19ca2087240/gym-0.26.2.tar.gz", hash = "sha256:e0d882f4b54f0c65f203104c24ab8a38b039f1289986803c7d02cdbe214fbcc4", size = 721689 }
-
-[[package]]
-name = "gym-notices"
-version = "0.0.8"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b4/62/d312681b09cacf77d04237a2815653c58e5031998bb613ce114b85fc3f57/gym-notices-0.0.8.tar.gz", hash = "sha256:ad25e200487cafa369728625fe064e88ada1346618526102659b4640f2b4b911", size = 2685 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/25/26/d786c6bec30fe6110fd3d22c9a273a2a0e56c0b73b93e25ea1af5a53243b/gym_notices-0.0.8-py3-none-any.whl", hash = "sha256:e5f82e00823a166747b4c2a07de63b6560b1acb880638547e0cabf825a01e463", size = 2965 },
-]
-
-[[package]]
 name = "gymnasium"
-version = "1.0.0"
+version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cloudpickle" },
@@ -408,9 +388,9 @@ dependencies = [
     { name = "numpy" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4e/12/1047b8fdbfcdce74022048d916e844ad7e6e1114d81d26a7aed657e3a76d/gymnasium-1.0.0.tar.gz", hash = "sha256:9d2b66f30c1b34fe3c2ce7fae65ecf365d0e9982d2b3d860235e773328a3b403", size = 821389 }
+sdist = { url = "https://files.pythonhosted.org/packages/1b/1c/d70b2ddd067992fa0332deae08293ef2dc489917ac5342e0e4b8850641f6/gymnasium-1.2.2.tar.gz", hash = "sha256:46d927328f8518bb5a689dbe270d228c1da2b08bcb71ae0152c10aa66f48d530", size = 829250 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/de/85/f5039ce2df5f0789ff1240f08a59f3e8c92e4c5f99543b7aad7388532f7c/gymnasium-1.0.0-py3-none-any.whl", hash = "sha256:b6f40e1e24c5bd419361e1a5b86a9117d2499baecc3a660d44dfff4c465393ad", size = 958120 },
+    { url = "https://files.pythonhosted.org/packages/c7/53/39cd8c2f85e213fce1f32367c4bdbd3402d3bcde7d0826a1172a0f2c5cc0/gymnasium-1.2.2-py3-none-any.whl", hash = "sha256:f04ec362b1fdf73a8b327db5ef89384a3f2ba411e05d3521513414fbbb2199c8", size = 952118 },
 ]
 
 [[package]]
@@ -1305,8 +1285,6 @@ dependencies = [
     { name = "frozendict" },
     { name = "fsspec" },
     { name = "grpcio" },
-    { name = "gym" },
-    { name = "gym-notices" },
     { name = "gymnasium" },
     { name = "idna" },
     { name = "ipykernel" },
@@ -1394,9 +1372,7 @@ requires-dist = [
     { name = "frozendict", specifier = "==2.4.6" },
     { name = "fsspec", specifier = "==2025.2.0" },
     { name = "grpcio", specifier = "==1.70.0" },
-    { name = "gym", specifier = "==0.26.2" },
-    { name = "gym-notices", specifier = "==0.0.8" },
-    { name = "gymnasium", specifier = "==1.0.0" },
+    { name = "gymnasium", specifier = ">=1.2.2" },
     { name = "idna", specifier = "==3.10" },
     { name = "ipykernel", specifier = "==6.29.5" },
     { name = "ipython", specifier = "==9.2.0" },
@@ -1440,7 +1416,7 @@ requires-dist = [
     { name = "shimmy", specifier = "==2.0.0" },
     { name = "six", specifier = "==1.17.0" },
     { name = "soupsieve", specifier = "==2.7" },
-    { name = "stable-baselines3", specifier = "==2.5.0" },
+    { name = "stable-baselines3", specifier = ">=2.5.0" },
     { name = "stack-data", specifier = "==0.6.3" },
     { name = "sympy", specifier = "==1.13.1" },
     { name = "tensorboard", specifier = "==2.19.0" },
@@ -1515,7 +1491,7 @@ wheels = [
 
 [[package]]
 name = "stable-baselines3"
-version = "2.5.0"
+version = "2.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cloudpickle" },
@@ -1525,9 +1501,9 @@ dependencies = [
     { name = "pandas" },
     { name = "torch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/6d/1857d8ca1171346d2c35fd6a3cf63a8179143a35eed242eab5726e41e4e1/stable_baselines3-2.5.0.tar.gz", hash = "sha256:97c953b3f8f1a7a06024f0e3165a6c633444ddaea43be20617023d924aaa1e96", size = 213161 }
+sdist = { url = "https://files.pythonhosted.org/packages/c9/42/f284c28272422262a99cdf35ecd2e283fded2f75327e6d5e82a9f6d6fe62/stable_baselines3-2.7.1.tar.gz", hash = "sha256:cd90d12d9ee0d9584053f12215c1682b313be4e3a8d8007739319799c3d2c071", size = 220719 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/ce/09ff2f03ba06b1355ca6b21554dbebbca5da4cb8ee6c1eb12e8151ab476b/stable_baselines3-2.5.0-py3-none-any.whl", hash = "sha256:cd9ff4201794ee724f693d5380d40cbe8fd2f08c454a5d5aadda737e937244f0", size = 183933 },
+    { url = "https://files.pythonhosted.org/packages/df/cc/a3038d3833f329dcd03b2dce8b778e4b41044caff88b48429473b8629623/stable_baselines3-2.7.1-py3-none-any.whl", hash = "sha256:b017e76dfe5ca0ce6eabb29e79c42e8c7e125d5862bfcd43ce04ec19732348d0", size = 188039 },
 ]
 
 [[package]]
