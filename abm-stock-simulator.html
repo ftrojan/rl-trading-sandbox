@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Agent-Based Stock Market Simulator</title>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #2196F3;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #0b7dda;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #4CAF50;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .info-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #2196F3;
+            margin-top: 20px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Agent-Based Stock Market Simulator</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>Number of Periods</label>
+                <input type="number" id="numPeriods" value="100" min="10" max="500">
+            </div>
+            <div class="control-group">
+                <label>Initial Price</label>
+                <input type="number" id="initialPrice" value="100" min="10" max="1000">
+            </div>
+            <div class="control-group">
+                <label>Num Fundamentalists</label>
+                <input type="number" id="numFundamentalists" value="30" min="1" max="100">
+            </div>
+            <div class="control-group">
+                <label>Num Chartists</label>
+                <input type="number" id="numChartists" value="20" min="1" max="100">
+            </div>
+            <div class="control-group">
+                <label>Num Noise Traders</label>
+                <input type="number" id="numNoise" value="50" min="1" max="200">
+            </div>
+            <div class="control-group">
+                <label>Fundamental Value</label>
+                <input type="number" id="fundamentalValue" value="100" min="10" max="1000">
+            </div>
+            <div class="control-group">
+                <label>Base Spread (%)</label>
+                <input type="number" id="baseSpread" value="0.5" min="0.1" max="5" step="0.1">
+            </div>
+            <div class="control-group">
+                <label>Volatility Factor</label>
+                <input type="number" id="volatilityFactor" value="1.0" min="0.1" max="3" step="0.1">
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" onclick="runSimulation()">Generate Market Data</button>
+            <button class="btn-secondary" onclick="runSimulation()">Regenerate</button>
+        </div>
+        
+        <div class="stats" id="stats"></div>
+        
+        <div id="candlestick_plot" style="margin-top: 20px;"></div>
+        <div id="volume_plot" style="margin-top: 10px;"></div>
+        
+        <div class="info-box">
+            <strong>Agent Types:</strong>
+            <ul style="margin: 10px 0;">
+                <li><strong>Fundamentalists</strong> - Trade based on deviation from fundamental value (mean reversion)</li>
+                <li><strong>Chartists</strong> - Follow momentum and trends in recent price movements</li>
+                <li><strong>Noise Traders</strong> - Random trading, creating market noise and liquidity</li>
+            </ul>
+            <strong>Market Mechanics:</strong> The model simulates order flow with realistic bid-ask spreads that widen during volatile periods, creating liquidity gaps and realistic price dynamics.
+        </div>
+    </div>
+
+    <script>
+        class Agent {
+            constructor(type, aggressiveness) {
+                this.type = type;
+                this.aggressiveness = aggressiveness || Math.random() * 0.5 + 0.5;
+            }
+            
+            decide(currentPrice, fundamentalValue, priceHistory, volatility) {
+                if (this.type === 'fundamentalist') {
+                    const deviation = (fundamentalValue - currentPrice) / currentPrice;
+                    const signal = deviation * this.aggressiveness * 10;
+                    return Math.tanh(signal);
+                } else if (this.type === 'chartist') {
+                    if (priceHistory.length < 5) return 0;
+                    const recentPrices = priceHistory.slice(-10);
+                    const momentum = (recentPrices[recentPrices.length - 1] - recentPrices[0]) / recentPrices[0];
+                    const signal = momentum * this.aggressiveness * 20;
+                    return Math.tanh(signal);
+                } else {
+                    return (Math.random() - 0.5) * 2 * this.aggressiveness;
+                }
+            }
+        }
+        
+        function simulateMarket(config) {
+            const agents = [];
+            
+            for (let i = 0; i < config.numFundamentalists; i++) {
+                agents.push(new Agent('fundamentalist'));
+            }
+            for (let i = 0; i < config.numChartists; i++) {
+                agents.push(new Agent('chartist'));
+            }
+            for (let i = 0; i < config.numNoise; i++) {
+                agents.push(new Agent('noise'));
+            }
+            
+            const ohlcData = [];
+            const priceHistory = [config.initialPrice];
+            let currentPrice = config.initialPrice;
+            
+            for (let period = 0; period < config.numPeriods; period++) {
+                const orders = [];
+                
+                const recentVolatility = calculateVolatility(priceHistory.slice(-20));
+                
+                agents.forEach(agent => {
+                    const decision = agent.decide(currentPrice, config.fundamentalValue, priceHistory, recentVolatility);
+                    const orderSize = Math.abs(decision) * (Math.random() * 50 + 50);
+                    
+                    if (Math.abs(decision) > 0.05) {
+                        orders.push({
+                            side: decision > 0 ? 'buy' : 'sell',
+                            size: orderSize,
+                            aggressiveness: agent.aggressiveness
+                        });
+                    }
+                });
+                
+                const buyOrders = orders.filter(o => o.side === 'buy').sort((a, b) => b.aggressiveness - a.aggressiveness);
+                const sellOrders = orders.filter(o => o.side === 'sell').sort((a, b) => b.aggressiveness - a.aggressiveness);
+                
+                const imbalance = buyOrders.length - sellOrders.length;
+                const totalVolume = orders.reduce((sum, o) => sum + o.size, 0);
+                
+                const spreadMultiplier = 1 + recentVolatility * config.volatilityFactor;
+                const baseSpreadPct = config.baseSpread / 100;
+                const spread = currentPrice * baseSpreadPct * spreadMultiplier;
+                
+                const priceChange = (imbalance / agents.length) * currentPrice * 0.02 * config.volatilityFactor;
+                const randomShock = (Math.random() - 0.5) * currentPrice * 0.005 * config.volatilityFactor;
+                
+                const midPrice = currentPrice + priceChange + randomShock;
+                
+                const numTicks = Math.floor(Math.random() * 8) + 5;
+                const tickPrices = [];
+                
+                for (let tick = 0; tick < numTicks; tick++) {
+                    const tickRandom = (Math.random() - 0.5) * spread * 2;
+                    tickPrices.push(midPrice + tickRandom);
+                }
+                
+                const open = tickPrices[0];
+                const close = tickPrices[tickPrices.length - 1];
+                const high = Math.max(...tickPrices);
+                const low = Math.min(...tickPrices);
+                
+                ohlcData.push({
+                    period: period,
+                    open: open,
+                    high: high,
+                    low: low,
+                    close: close,
+                    volume: totalVolume,
+                    spread: spread,
+                    imbalance: imbalance
+                });
+                
+                currentPrice = close;
+                priceHistory.push(currentPrice);
+            }
+            
+            return ohlcData;
+        }
+        
+        function calculateVolatility(prices) {
+            if (prices.length < 2) return 0.01;
+            
+            const returns = [];
+            for (let i = 1; i < prices.length; i++) {
+                returns.push((prices[i] - prices[i-1]) / prices[i-1]);
+            }
+            
+            const mean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
+            const variance = returns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / returns.length;
+            
+            return Math.sqrt(variance);
+        }
+        
+        function plotCandlestick(data) {
+            const inc = [];
+            const dec = [];
+            
+            data.forEach(d => {
+                if (d.close >= d.open) {
+                    inc.push(d);
+                } else {
+                    dec.push(d);
+                }
+            });
+            
+            const incSource = {
+                period: inc.map(d => d.period),
+                open: inc.map(d => d.open),
+                high: inc.map(d => d.high),
+                low: inc.map(d => d.low),
+                close: inc.map(d => d.close)
+            };
+            
+            const decSource = {
+                period: dec.map(d => d.period),
+                open: dec.map(d => d.open),
+                high: dec.map(d => d.high),
+                low: dec.map(d => d.low),
+                close: dec.map(d => d.close)
+            };
+            
+            const p = Bokeh.Plotting.figure({
+                title: 'OHLC Candlestick Chart',
+                x_axis_label: 'Period',
+                y_axis_label: 'Price',
+                width: 1300,
+                height: 500,
+                tools: 'pan,wheel_zoom,box_zoom,reset,save'
+            });
+            
+            const w = 0.4;
+            
+            // Increasing candles (green)
+            p.segment(incSource.period, incSource.high, incSource.period, incSource.low, {
+                color: 'green',
+                line_width: 1
+            });
+            p.vbar({
+                x: incSource.period,
+                width: w,
+                top: incSource.open,
+                bottom: incSource.close,
+                fill_color: 'green',
+                line_color: 'green'
+            });
+            
+            // Decreasing candles (red)
+            p.segment(decSource.period, decSource.high, decSource.period, decSource.low, {
+                color: 'red',
+                line_width: 1
+            });
+            p.vbar({
+                x: decSource.period,
+                width: w,
+                top: decSource.open,
+                bottom: decSource.close,
+                fill_color: 'red',
+                line_color: 'red'
+            });
+            
+            Bokeh.Plotting.show(p, '#candlestick_plot');
+            
+            // Volume plot
+            const volumePlot = Bokeh.Plotting.figure({
+                title: 'Trading Volume',
+                x_axis_label: 'Period',
+                y_axis_label: 'Volume',
+                width: 1300,
+                height: 200,
+                tools: 'pan,wheel_zoom,box_zoom,reset,save'
+            });
+            
+            const volumeSource = {
+                period: data.map(d => d.period),
+                volume: data.map(d => d.volume)
+            };
+            
+            volumePlot.vbar({
+                x: volumeSource.period,
+                top: volumeSource.volume,
+                width: 0.8,
+                fill_color: 'steelblue',
+                line_color: 'steelblue',
+                alpha: 0.7
+            });
+            
+            Bokeh.Plotting.show(volumePlot, '#volume_plot');
+        }
+        
+        function displayStats(data) {
+            const prices = data.map(d => d.close);
+            const returns = [];
+            for (let i = 1; i < prices.length; i++) {
+                returns.push((prices[i] - prices[i-1]) / prices[i-1]);
+            }
+            
+            const avgPrice = prices.reduce((a, b) => a + b) / prices.length;
+            const maxPrice = Math.max(...prices);
+            const minPrice = Math.min(...prices);
+            const finalPrice = prices[prices.length - 1];
+            const totalReturn = ((finalPrice - prices[0]) / prices[0] * 100);
+            const volatility = calculateVolatility(prices) * 100;
+            const avgVolume = data.reduce((sum, d) => sum + d.volume, 0) / data.length;
+            const avgSpread = data.reduce((sum, d) => sum + d.spread, 0) / data.length;
+            
+            const statsHTML = `
+                <div class="stat-box">
+                    <div class="stat-label">Final Price</div>
+                    <div class="stat-value">$${finalPrice.toFixed(2)}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total Return</div>
+                    <div class="stat-value">${totalReturn.toFixed(2)}%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Volatility</div>
+                    <div class="stat-value">${volatility.toFixed(2)}%</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">High / Low</div>
+                    <div class="stat-value">$${maxPrice.toFixed(2)} / $${minPrice.toFixed(2)}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Avg Volume</div>
+                    <div class="stat-value">${avgVolume.toFixed(0)}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Avg Spread</div>
+                    <div class="stat-value">$${avgSpread.toFixed(2)}</div>
+                </div>
+            `;
+            
+            document.getElementById('stats').innerHTML = statsHTML;
+        }
+        
+        function runSimulation() {
+            const config = {
+                numPeriods: parseInt(document.getElementById('numPeriods').value),
+                initialPrice: parseFloat(document.getElementById('initialPrice').value),
+                numFundamentalists: parseInt(document.getElementById('numFundamentalists').value),
+                numChartists: parseInt(document.getElementById('numChartists').value),
+                numNoise: parseInt(document.getElementById('numNoise').value),
+                fundamentalValue: parseFloat(document.getElementById('fundamentalValue').value),
+                baseSpread: parseFloat(document.getElementById('baseSpread').value),
+                volatilityFactor: parseFloat(document.getElementById('volatilityFactor').value)
+            };
+            
+            const data = simulateMarket(config);
+            plotCandlestick(data);
+            displayStats(data);
+        }
+        
+        // Run initial simulation
+        window.onload = function() {
+            runSimulation();
+        };
+    </script>
+</body>
+</html>
