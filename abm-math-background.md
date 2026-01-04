@@ -19,7 +19,7 @@ signal_fund = tanh(α_i × deviation × 10)
 ```
 
 **Where:**
-- `V_f` = Fundamental value (exogenous parameter)
+- `V_f` = Fundamental value (exogenous numeric input control parameter)
 - `P_t` = Current market price at time t
 - `α_i` = Agent-specific aggressiveness parameter ∈ [0.5, 1.0]
 - `tanh()` = Hyperbolic tangent function, bounded to [-1, 1]
